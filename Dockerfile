@@ -33,4 +33,4 @@ COPY --from=builder /op-connect-secret-driver /op-connect-secret-driver
 COPY --from=builder /run/docker/plugins /run/docker/plugins
 
 # Command to run the driver
-CMD ["op-connect-secret-driver"]
+CMD ["/op-connect-secret-driver"]
