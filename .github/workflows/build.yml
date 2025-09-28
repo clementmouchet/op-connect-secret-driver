@@ -97,7 +97,7 @@ jobs:
         platform: [linux/amd64, linux/arm64]
     permissions:
       contents: write # Needed for release creation
-      packages: write # Needed for Docker Hub push
+      packages: write # Needed for Docker Hub and GHCR push
       id-token: write # Best practice for registry interaction
 
     steps:
@@ -127,16 +127,18 @@ jobs:
           docker rm -vf "$id"
           rm plugin-rootfs-${{ env.platform_tag }}.tar
 
-      - name: 'Log into registry'
+      - name: 'Log into Docker Hub'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: 'Enable experimental features'
-        run: |
-          echo '{"experimental": true}' | sudo tee /etc/docker/daemon.json
-          sudo service docker restart
+      - name: 'Log into GitHub Container Registry (GHCR)'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Publish latest (main branch)'
         # Only run if pushed to the 'main' branch
@@ -145,12 +147,21 @@ jobs:
           docker plugin create "docker.io/${{ secrets.DOCKER_USERNAME }}/op-connect-secret-driver:${{ env.platform_tag }}" plugin
           docker plugin push "docker.io/${{ secrets.DOCKER_USERNAME }}/op-connect-secret-driver:${{ env.platform_tag }}"          
 
-      - name: 'Publish tagged (tag push)'
+      - name: 'Publish tagged (tag push) to Docker Hub and GHCR'
         # Only run if a tag was pushed
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          docker plugin create "docker.io/${{ secrets.DOCKER_USERNAME }}/op-connect-secret-driver:${{ github.ref_name }}-${{ env.platform_tag }}" plugin
-          docker plugin push "docker.io/${{ secrets.DOCKER_USERNAME }}/op-connect-secret-driver:${{ github.ref_name }}-${{ env.platform_tag }}"
+          TAG_NAME="${{ github.ref_name }}-${{ env.platform_tag }}"
+          DOCKER_HUB_IMAGE="docker.io/${{ secrets.DOCKER_USERNAME }}/op-connect-secret-driver:${TAG_NAME}"
+          GHCR_IMAGE="ghcr.io/${{ github.repository }}/op-connect-secret-driver:${TAG_NAME}"
+          
+          # Create the plugin for Docker Hub
+          docker plugin create "${DOCKER_HUB_IMAGE}" plugin
+          docker plugin push "${DOCKER_HUB_IMAGE}"
+          
+          # Create and push to GHCR.
+          docker plugin create "${GHCR_IMAGE}" plugin
+          docker plugin push "${GHCR_IMAGE}"
 
   # --- 4. CREATE GITHUB RELEASE (only on tag push) ---
   create-github-release:
@@ -185,32 +196,56 @@ jobs:
             ---
             
             ## Installation
-            You can install the plugin directly from Docker Hub with the following command:
+            You can install the plugin directly from Docker Hub or GitHub Container Registry (GHCR).
             
             Choose the version based on your platform:
 
             ### For `linux/amd64`
+            
+            **Docker Hub**
             ```shell
-            docker plugin install ${{ secrets.DOCKER_USERNAME }}/op-connect-secret-driver:${{ github.ref_name }}-linux-amd64 \
+            docker plugin install docker.io/${{ secrets.DOCKER_USERNAME }}/op-connect-secret-driver:${{ github.ref_name }}-linux-amd64 \
+              --grant-all-permissions \
+              --alias op-connect-secret-driver:${{ github.ref_name }} \
+              --disable
+            ```
+            
+            **GHCR**
+            ```shell
+            docker plugin install ghcr.io/${{ github.repository }}/op-connect-secret-driver:${{ github.ref_name }}-linux-amd64 \
               --grant-all-permissions \
               --alias op-connect-secret-driver:${{ github.ref_name }} \
               --disable
             ```
             
             ### For `linux/arm64`
+            
+            **Docker Hub**
             ```shell
-            docker plugin install ${{ secrets.DOCKER_USERNAME }}/op-connect-secret-driver:${{ github.ref_name }}-linux-arm64 \
+            docker plugin install docker.io/${{ secrets.DOCKER_USERNAME }}/op-connect-secret-driver:${{ github.ref_name }}-linux-arm64 \
               --grant-all-permissions \
               --alias op-connect-secret-driver:${{ github.ref_name }} \
               --disable
             ```
             
-            After installation, set the environment variables and enable the plugin:
+            **GHCR**
+            ```shell
+            docker plugin install ghcr.io/${{ github.repository }}/op-connect-secret-driver:${{ github.ref_name }}-linux-arm64 \
+              --grant-all-permissions \
+              --alias op-connect-secret-driver:${{ github.ref_name }} \
+              --disable
+            ```
+            
+            ---
+            
+            **Configuration**
+            
+            After installation, set the environment variables and enable the plugin. *Note: You will need to choose the correct alias for the plugin you installed.*
             
             ```shell
             docker plugin set op-connect-secret-driver:${{ github.ref_name }} OP_CONNECT_HOST="$OP_CONNECT_HOST"
             docker plugin set op-connect-secret-driver:${{ github.ref_name }} OP_CONNECT_TOKEN="$OP_CONNECT_TOKEN"
-            docker plugin enable ${{ secrets.DOCKER_USERNAME }}/op-connect-secret-driver:${{ github.ref_name }}
+            docker plugin enable op-connect-secret-driver:${{ github.ref_name }}
             ```
           draft: true
           prerelease: false
