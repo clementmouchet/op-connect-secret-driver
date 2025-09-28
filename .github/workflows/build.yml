@@ -11,6 +11,8 @@ on:
 jobs:
   # --- 1. LINT AND BUILD GO CODE ---
   lint:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
@@ -34,6 +36,8 @@ jobs:
 
   # --- 2. BUILD IMAGE AND EXPORT ROOTFS ARTIFACTS ---
   build-and-upload-artifacts:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     needs: lint
     strategy:
