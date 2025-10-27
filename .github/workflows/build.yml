@@ -78,7 +78,7 @@ jobs:
           docker rm -vf "$id"
 
       - name: 'Upload artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           # Artifact name is key: it's unique per platform
           name: plugin-rootfs-${{ env.platform_tag }}
