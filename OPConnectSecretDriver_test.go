@@ -129,8 +129,7 @@ func TestNewDriverWithClientFactory(t *testing.T) {
 				}
 				if driver == nil {
 					t.Errorf("newDriverWithClientFactory() expected driver, got nil")
-				}
-				if driver.client == nil {
+				} else if driver.client == nil {
 					t.Errorf("newDriverWithClientFactory() driver.client is nil")
 				}
 			}
