@@ -9,7 +9,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  # --- 1. LINT AND BUILD GO CODE ---
+  # --- LINT AND BUILD GO CODE ---
   lint:
     permissions:
       contents: read
@@ -34,12 +34,83 @@ jobs:
       - name: 'Go Build'
         run: go build -v ./
 
-  # --- 2. BUILD IMAGE AND EXPORT ROOTFS ARTIFACTS ---
+  # --- TEST GO CODE ---
+  test:
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v5
+
+      - name: 'Go Set up'
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25'
+
+      - name: 'Run Tests'
+        run: |
+          go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: 'Generate Test Report'
+        uses: dorny/test-reporter@v2
+        if: always()
+        with:
+          name: Go Test Results
+          path: '**/*_test.go'
+          reporter: go-test
+          fail-on-error: true
+
+      - name: 'Upload Coverage to Codecov'
+        uses: codecov/codecov-action@v5
+        if: always()
+        with:
+          files: ./coverage.out
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: 'Generate Coverage Report'
+        if: always()
+        run: |
+          go tool cover -html=coverage.out -o coverage.html
+
+      - name: 'Upload Coverage HTML'
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage.html
+          retention-days: 30
+
+      - name: 'Comment Test Coverage on PR'
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+            
+            // Get coverage percentage
+            const coverage = execSync('go tool cover -func=coverage.out | grep total | awk \'{print $3}\'').toString().trim();
+            
+            const comment = `## Test Coverage Report\n\n📊 Total Coverage: **${coverage}**\n\n[View detailed coverage report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # --- BUILD IMAGE AND EXPORT ROOTFS ARTIFACTS ---
   build-and-upload-artifacts:
     permissions:
       contents: read
     runs-on: ubuntu-latest
-    needs: lint
+    needs: [lint, test]
     strategy:
       matrix:
         platform: [linux/amd64, linux/arm64]
@@ -86,7 +157,7 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-  # --- 3. DOWNLOAD ARTIFACTS AND PUBLISH ---
+  # --- DOWNLOAD ARTIFACTS AND PUBLISH ---
   publish:
     runs-on: ubuntu-latest
     needs: build-and-upload-artifacts
@@ -152,7 +223,7 @@ jobs:
           docker plugin create "docker.io/${{ secrets.DOCKER_USERNAME }}/op-connect-secret-driver:${{ github.ref_name }}-${{ env.platform_tag }}" plugin
           docker plugin push "docker.io/${{ secrets.DOCKER_USERNAME }}/op-connect-secret-driver:${{ github.ref_name }}-${{ env.platform_tag }}"
 
-  # --- 4. CREATE GITHUB RELEASE (only on tag push) ---
+  # --- CREATE GITHUB RELEASE (only on tag push) ---
   create-github-release:
     runs-on: ubuntu-latest
     needs: publish
