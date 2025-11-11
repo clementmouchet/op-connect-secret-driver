@@ -2,47 +2,74 @@ services:
   test-service:
     image: alpine
     command: |
-      sh -c "echo 'All secrets echoed:' && \
-            echo Username: $$(cat /run/secrets/username) && \
-            echo Password: $$(cat /run/secrets/password) && \
-            echo readme: $$(cat /run/secrets/readme) && \
-            echo compose_yaml_by_attributes: $$(cat /run/secrets/compose_yaml_by_attributes) && \
-            echo compose_yaml_by_ref: $$(cat /run/secrets/compose_yaml_by_ref) && \
+      sh -c "echo 'Echoing secrets:' && \
+            echo Username: $$(cat /run/secrets/test_username) && \
+            echo Password: $$(cat /run/secrets/test_password) && \
+            echo section_password_by_attributes: $$(cat /run/secrets/test_section_password_by_attributes) && \
+            echo section_password_by_ref: $$(cat /run/secrets/test_section_password_by_ref) && \
+            echo config_yaml_by_attributes: $$(cat /run/secrets/test_config_yaml_by_attributes) && \
+            echo config_yaml_by_ref: $$(cat /run/secrets/test_config_yaml_by_ref) && \
+            echo test_special_field_uuid_by_attributes: $$(cat /run/secrets/test_special_field_uuid_by_attributes) && \
+            echo test_special_field_uuid_by_ref: $$(cat /run/secrets/test_special_field_uuid_by_ref) && \
             echo 'All secrets echoed:' && \
             sleep infinity"
     secrets:
-      - username
-      - password
-      - readme
-      - compose_yaml_by_ref
-      - compose_yaml_by_attributes
+      - test_username
+      - test_password
+      - test_section_password_by_attributes
+      - test_section_password_by_ref
+      - test_config_yaml_by_attributes
+      - test_config_yaml_by_ref
+      - test_special_field_uuid_by_attributes
+      - test_special_field_uuid_by_ref
 
 secrets:
-  username:
+  test_username:
     driver: op-connect-secret-driver:latest
     labels:
       ref: "op://Test/Test Secret/username"
 
-  password:
+  test_password:
     driver: op-connect-secret-driver:latest
     labels:
       vault: "Test"
       item: "Test Secret"
       field: "password"
 
-  readme:
-    driver: op-connect-secret-driver:latest
-    labels:
-      ref: "op://Test/README/README.md"
-
-  compose_yaml_by_attributes:
+  test_section_password_by_attributes:
     driver: op-connect-secret-driver:latest
     labels:
       vault: "Test"
-      item: "test docker"
-      field: "compose.yml"
+      item: "Test Secret"
+      section: "section 1"
+      field: "password"
 
-  compose_yaml_by_ref:
+  test_section_password_by_ref:
     driver: op-connect-secret-driver:latest
     labels:
-      ref: "op://Test/test docker/compose.yml"
+      ref: "op://Test/Test Secret/section 1/password"
+
+  test_config_yaml_by_attributes:
+    driver: op-connect-secret-driver:latest
+    labels:
+      vault: "Test"
+      item: "Test Config File"
+      field: "config.yml"
+
+  test_config_yaml_by_ref:
+    driver: op-connect-secret-driver:latest
+    labels:
+      ref: "op://Test/Test Config File/config.yml"
+
+  test_special_field_uuid_by_attributes:
+    driver: op-connect-secret-driver:latest
+    labels:
+      vault: "Test"
+      item: "buyrxgj6kdwulpomoudk3277pq"
+      section: "qf65fxk4obzxwne6c3fithaliy"
+      field: "2hht6727vkjyczjffo2hhflske"
+
+  test_special_field_uuid_by_ref:
+    driver: op-connect-secret-driver:latest
+    labels:
+      ref: "op://Test/buyrxgj6kdwulpomoudk3277pq/qf65fxk4obzxwne6c3fithaliy/2hht6727vkjyczjffo2hhflske"

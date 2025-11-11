@@ -298,12 +298,91 @@ func TestOPConnectSecretDriver_Get(t *testing.T) {
 			setupMock: func(m *MockClient) {
 				m.GetItemFunc = func(uuid, vaultUUID string) (*onepassword.Item, error) {
 					return &onepassword.Item{
+						Sections: []*onepassword.ItemSection{
+							{
+								ID:    "section-123",
+								Label: "test-section",
+							},
+						},
 						Fields: []*onepassword.ItemField{
 							{
 								Label: "test-field",
 								Value: "secret-value-in-section",
 								Section: &onepassword.ItemSection{
+									ID:    "section-123",
 									Label: "test-section",
+								},
+							},
+						},
+					}, nil
+				}
+			},
+		},
+		{
+			name: "get field with section ID",
+			request: secrets.Request{
+				SecretName: "test-secret",
+				SecretLabels: map[string]string{
+					"vault":   "test-vault",
+					"item":    "test-item",
+					"field":   "test-field",
+					"section": "section-123",
+				},
+			},
+			wantErr:   false,
+			wantValue: "secret-value-by-id",
+			setupMock: func(m *MockClient) {
+				m.GetItemFunc = func(uuid, vaultUUID string) (*onepassword.Item, error) {
+					return &onepassword.Item{
+						Sections: []*onepassword.ItemSection{
+							{
+								ID:    "section-123",
+								Label: "My Section",
+							},
+						},
+						Fields: []*onepassword.ItemField{
+							{
+								Label: "test-field",
+								Value: "secret-value-by-id",
+								Section: &onepassword.ItemSection{
+									ID:    "section-123",
+									Label: "My Section",
+								},
+							},
+						},
+					}, nil
+				}
+			},
+		},
+		{
+			name: "get field with section name",
+			request: secrets.Request{
+				SecretName: "test-secret",
+				SecretLabels: map[string]string{
+					"vault":   "test-vault",
+					"item":    "test-item",
+					"field":   "test-field",
+					"section": "My Section",
+				},
+			},
+			wantErr:   false,
+			wantValue: "secret-value-by-name",
+			setupMock: func(m *MockClient) {
+				m.GetItemFunc = func(uuid, vaultUUID string) (*onepassword.Item, error) {
+					return &onepassword.Item{
+						Sections: []*onepassword.ItemSection{
+							{
+								ID:    "section-123",
+								Label: "My Section",
+							},
+						},
+						Fields: []*onepassword.ItemField{
+							{
+								Label: "test-field",
+								Value: "secret-value-by-name",
+								Section: &onepassword.ItemSection{
+									ID:    "section-123",
+									Label: "My Section",
 								},
 							},
 						},
@@ -442,7 +521,7 @@ func TestOPConnectSecretDriver_Get(t *testing.T) {
 			},
 		},
 		{
-			name: "get file with section",
+			name: "get file with section by name",
 			request: secrets.Request{
 				SecretName: "test-secret",
 				SecretLabels: map[string]string{
@@ -457,10 +536,17 @@ func TestOPConnectSecretDriver_Get(t *testing.T) {
 			setupMock: func(m *MockClient) {
 				m.GetItemFunc = func(uuid, vaultUUID string) (*onepassword.Item, error) {
 					return &onepassword.Item{
+						Sections: []*onepassword.ItemSection{
+							{
+								ID:    "section-456",
+								Label: "test-section",
+							},
+						},
 						Files: []*onepassword.File{
 							{
 								Name: "test-file",
 								Section: &onepassword.ItemSection{
+									ID:    "section-456",
 									Label: "test-section",
 								},
 							},
@@ -469,6 +555,44 @@ func TestOPConnectSecretDriver_Get(t *testing.T) {
 				}
 				m.GetFileContentFunc = func(file *onepassword.File) ([]byte, error) {
 					return []byte("file-content-in-section"), nil
+				}
+			},
+		},
+		{
+			name: "get file with section by ID",
+			request: secrets.Request{
+				SecretName: "test-secret",
+				SecretLabels: map[string]string{
+					"vault":   "test-vault",
+					"item":    "test-item",
+					"field":   "test-file",
+					"section": "section-456",
+				},
+			},
+			wantErr:   false,
+			wantValue: "file-content-by-section-id",
+			setupMock: func(m *MockClient) {
+				m.GetItemFunc = func(uuid, vaultUUID string) (*onepassword.Item, error) {
+					return &onepassword.Item{
+						Sections: []*onepassword.ItemSection{
+							{
+								ID:    "section-456",
+								Label: "File Section",
+							},
+						},
+						Files: []*onepassword.File{
+							{
+								Name: "test-file",
+								Section: &onepassword.ItemSection{
+									ID:    "section-456",
+									Label: "File Section",
+								},
+							},
+						},
+					}, nil
+				}
+				m.GetFileContentFunc = func(file *onepassword.File) ([]byte, error) {
+					return []byte("file-content-by-section-id"), nil
 				}
 			},
 		},
@@ -487,6 +611,12 @@ func TestOPConnectSecretDriver_Get(t *testing.T) {
 			setupMock: func(m *MockClient) {
 				m.GetItemFunc = func(uuid, vaultUUID string) (*onepassword.Item, error) {
 					return &onepassword.Item{
+						Sections: []*onepassword.ItemSection{
+							{
+								ID:    "section-999",
+								Label: "other-section",
+							},
+						},
 						Fields: []*onepassword.ItemField{
 							{
 								Label: "test-field",
@@ -555,10 +685,17 @@ func TestOPConnectSecretDriver_Get(t *testing.T) {
 			setupMock: func(m *MockClient) {
 				m.GetItemFunc = func(uuid, vaultUUID string) (*onepassword.Item, error) {
 					return &onepassword.Item{
+						Sections: []*onepassword.ItemSection{
+							{
+								ID:    "section-789",
+								Label: "test-section",
+							},
+						},
 						Files: []*onepassword.File{
 							{
 								Name: "test-file",
 								Section: &onepassword.ItemSection{
+									ID:    "section-789",
 									Label: "test-section",
 								},
 							},
@@ -567,6 +704,148 @@ func TestOPConnectSecretDriver_Get(t *testing.T) {
 				}
 				m.GetFileContentFunc = func(file *onepassword.File) ([]byte, error) {
 					return nil, fmt.Errorf("file content error")
+				}
+			},
+		},
+		{
+			name: "field exists in different section - should not match",
+			request: secrets.Request{
+				SecretName: "test-secret",
+				SecretLabels: map[string]string{
+					"vault":   "test-vault",
+					"item":    "test-item",
+					"field":   "test-field",
+					"section": "section-a",
+				},
+			},
+			wantErr: true,
+			setupMock: func(m *MockClient) {
+				m.GetItemFunc = func(uuid, vaultUUID string) (*onepassword.Item, error) {
+					return &onepassword.Item{
+						Sections: []*onepassword.ItemSection{
+							{
+								ID:    "section-a-id",
+								Label: "section-a",
+							},
+							{
+								ID:    "section-b-id",
+								Label: "section-b",
+							},
+						},
+						Fields: []*onepassword.ItemField{
+							{
+								Label: "test-field",
+								Value: "value-in-section-b",
+								Section: &onepassword.ItemSection{
+									ID:    "section-b-id",
+									Label: "section-b",
+								},
+							},
+						},
+					}, nil
+				}
+			},
+		},
+		{
+			name: "get field by ID instead of label",
+			request: secrets.Request{
+				SecretName: "test-secret",
+				SecretLabels: map[string]string{
+					"vault": "test-vault",
+					"item":  "test-item",
+					"field": "field-id-123",
+				},
+			},
+			wantErr:   false,
+			wantValue: "secret-by-field-id",
+			setupMock: func(m *MockClient) {
+				m.GetItemFunc = func(uuid, vaultUUID string) (*onepassword.Item, error) {
+					return &onepassword.Item{
+						Fields: []*onepassword.ItemField{
+							{
+								ID:    "field-id-123",
+								Label: "My Field Label",
+								Value: "secret-by-field-id",
+							},
+						},
+					}, nil
+				}
+			},
+		},
+		{
+			name: "get field by ID with section ID",
+			request: secrets.Request{
+				SecretName: "test-secret",
+				SecretLabels: map[string]string{
+					"vault":   "test-vault",
+					"item":    "test-item",
+					"field":   "field-id-456",
+					"section": "section-id-789",
+				},
+			},
+			wantErr:   false,
+			wantValue: "secret-by-ids",
+			setupMock: func(m *MockClient) {
+				m.GetItemFunc = func(uuid, vaultUUID string) (*onepassword.Item, error) {
+					return &onepassword.Item{
+						Sections: []*onepassword.ItemSection{
+							{
+								ID:    "section-id-789",
+								Label: "Section Label",
+							},
+						},
+						Fields: []*onepassword.ItemField{
+							{
+								ID:    "field-id-456",
+								Label: "Field Label",
+								Value: "secret-by-ids",
+								Section: &onepassword.ItemSection{
+									ID:    "section-id-789",
+									Label: "Section Label",
+								},
+							},
+						},
+					}, nil
+				}
+			},
+		},
+		{
+			name: "field ID exists but in wrong section",
+			request: secrets.Request{
+				SecretName: "test-secret",
+				SecretLabels: map[string]string{
+					"vault":   "test-vault",
+					"item":    "test-item",
+					"field":   "field-id-111",
+					"section": "section-correct",
+				},
+			},
+			wantErr: true,
+			setupMock: func(m *MockClient) {
+				m.GetItemFunc = func(uuid, vaultUUID string) (*onepassword.Item, error) {
+					return &onepassword.Item{
+						Sections: []*onepassword.ItemSection{
+							{
+								ID:    "section-correct-id",
+								Label: "section-correct",
+							},
+							{
+								ID:    "section-wrong-id",
+								Label: "section-wrong",
+							},
+						},
+						Fields: []*onepassword.ItemField{
+							{
+								ID:    "field-id-111",
+								Label: "Field Label",
+								Value: "value-in-wrong-section",
+								Section: &onepassword.ItemSection{
+									ID:    "section-wrong-id",
+									Label: "section-wrong",
+								},
+							},
+						},
+					}, nil
 				}
 			},
 		},
