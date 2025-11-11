@@ -134,6 +134,24 @@ jobs:
               }
             });
 
+      - name: 'Post coverage as Workflow Summary'
+        if: always()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { execSync } = require('child_process');
+        
+            // Get coverage percentage
+            const coverage = execSync('go tool cover -func=coverage.out | grep total | awk \'{print $3}\'').toString().trim();
+        
+            await core.summary
+              .addHeading('Test Coverage Report')
+              .addRaw(`📊 Total Coverage: **${coverage}**`)
+              .addEOL()
+              .addEOL()
+              .addLink('View detailed coverage report', '${{ steps.deployment.outputs.page_url }}coverage.html')
+              .write();
+
   # --- BUILD IMAGE AND EXPORT ROOTFS ARTIFACTS ---
   build-and-upload-artifacts:
     permissions:
