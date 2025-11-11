@@ -1,6 +1,11 @@
 # op-connect-secret-driver
 #### _A Docker Secret driver for [1Password Connect][1PasswordConnectServer]_
 
+[![Build and Publish Plugin](https://github.com/clementmouchet/op-connect-secret-driver/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/clementmouchet/op-connect-secret-driver/actions/workflows/build.yml?query=branch%3Amain)
+[![Go Test Results](https://img.shields.io/badge/tests-view%20results-blue)](https://github.com/clementmouchet/op-connect-secret-driver/actions/workflows/build.yml?query=is%3Asuccess+branch%3Amain)
+[![Code Coverage](https://img.shields.io/badge/coverage-view%20results-blue)](https://github.com/clementmouchet/op-connect-secret-driver/actions/workflows/build.yml?query=is%3Asuccess+branch%3Amain)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 This Docker Secret driver plugin integrates with **[1Password Connect server][1PasswordConnectServer]** to securely manage secrets in Docker Swarm.
 
 ## Requirements
