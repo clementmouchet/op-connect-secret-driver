@@ -120,7 +120,7 @@ jobs:
         
             await core.summary
               .addHeading('Test Coverage Report')
-              .addRaw(`📊 Total Coverage: **${coverage}**`)
+              .addRaw(`📊 Total Coverage: ${coverage}`)
               .addEOL()
               .addLink('View detailed coverage report', '${{ steps.deployment.outputs.page_url }}coverage.html')
               .write();
