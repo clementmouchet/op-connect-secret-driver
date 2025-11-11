@@ -119,7 +119,8 @@ jobs:
             const coverage = execSync('go tool cover -func=coverage.out | grep total | awk \'{print $3}\'').toString().trim();
         
             await core.summary
-              .addHeading('Total Coverage: ${coverage}')
+              .addHeading('Test Coverage Report')
+              .addRaw(`📊 Total Coverage: **${coverage}**`)
               .addEOL()
               .addLink('View detailed coverage report', '${{ steps.deployment.outputs.page_url }}coverage.html')
               .write();
