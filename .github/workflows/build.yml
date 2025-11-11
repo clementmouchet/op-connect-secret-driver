@@ -68,25 +68,17 @@ jobs:
           reporter: java-junit
           fail-on-error: true
 
-      - name: 'Upload Coverage to Codecov'
-        uses: codecov/codecov-action@v5
-        if: always()
-        with:
-          files: ./coverage.out
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-
       - name: 'Generate Coverage Report'
         if: always()
         run: |
-          go tool cover -html=coverage.out -o coverage.html
+          mkdir site
+          go tool cover -html=coverage.out -o site/coverage.html
 
       - name: 'Upload Coverage to GitHub Pages'
         if: github.event_name == 'pull_request'
         uses: actions/upload-pages-artifact@v4
         with:
-          path: coverage.html
+          path: ./site
           name: github-pages
 
       - name: 'Deploy to GitHub Pages'
