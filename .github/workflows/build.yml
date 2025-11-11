@@ -108,32 +108,6 @@ jobs:
               body: comment
             });
 
-      - name: 'Post coverage as Check Run on Workflow'
-        if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const fs = require('fs');
-            const { execSync } = require('child_process');
-            
-            // Get coverage percentage
-            const coverage = execSync('go tool cover -func=coverage.out | grep total | awk \'{print $3}\'').toString().trim();
-            
-            const summary = `## Test Coverage Report\n\n📊 Total Coverage: **${coverage}**\n\n[View detailed coverage report](${{ steps.deployment.outputs.page_url }}coverage.html)`;
-
-            await github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: 'Test Coverage Report',
-              head_sha: context.sha,
-              status: 'completed',
-              conclusion: 'neutral',
-              output: {
-                title: 'Test Coverage Report',
-                summary: summary
-              }
-            });
-
       - name: 'Post coverage as Workflow Summary'
         if: always()
         uses: actions/github-script@v8
@@ -145,9 +119,7 @@ jobs:
             const coverage = execSync('go tool cover -func=coverage.out | grep total | awk \'{print $3}\'').toString().trim();
         
             await core.summary
-              .addHeading('Test Coverage Report')
-              .addRaw(`📊 Total Coverage: **${coverage}**`)
-              .addEOL()
+              .addHeading('Total Coverage: ${coverage}')
               .addEOL()
               .addLink('View detailed coverage report', '${{ steps.deployment.outputs.page_url }}coverage.html')
               .write();
