@@ -14,3 +14,6 @@ go.work.sum
 # Editor/IDE
 .idea/
 .vscode/
+/coverage.html
+/coverage.out
+/report.xml

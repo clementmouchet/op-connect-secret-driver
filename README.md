@@ -1,6 +1,11 @@
 # op-connect-secret-driver
 #### _A Docker Secret driver for [1Password Connect][1PasswordConnectServer]_
 
+[![Build and Publish Plugin](https://github.com/clementmouchet/op-connect-secret-driver/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/clementmouchet/op-connect-secret-driver/actions/workflows/build.yml?query=branch%3Amain)
+[![Go Test Results](https://img.shields.io/badge/tests-view%20results-blue)](https://github.com/clementmouchet/op-connect-secret-driver/actions/workflows/build.yml?query=is%3Asuccess+branch%3Amain)
+[![Code Coverage](https://img.shields.io/badge/coverage-view%20results-blue)](https://github.com/clementmouchet/op-connect-secret-driver/actions/workflows/build.yml?query=is%3Asuccess+branch%3Amain)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 This Docker Secret driver plugin integrates with **[1Password Connect server][1PasswordConnectServer]** to securely manage secrets in Docker Swarm.
 
 ## Requirements
@@ -32,19 +37,21 @@ docker plugin set op-connect-secret-driver:latest OP_CONNECT_TOKEN=your-1passwor
 ### Docker Secret Driver Configuration
 
 The plugin supports two ways to reference secrets:
-1. Individual fields using `vault`, `item`, and optional `field` provided as secret labels
-2. [1Password][1Password] URL format using the `ref` as secret label in the format `op://vault/item/field`
-   (that you can copy from [1Password][1Password] directly)
+1. Individual fields using `vault`, `item`, and optional `field` and `section` provided as secret labels
+2. [1Password][1Password] URL format using the `ref` as secret label in the format `op://vault/item/field` or 
+   `op://vault/item/section/field` (that you can copy from [1Password][1Password] directly)
 
 Notes:
-- The `field` parameter is optional and defaults to "password" if not specified
+- The field parameter is optional and defaults to "password" if not specified
+- The section parameter is optional and should be specified when the field is inside a section
 - The plugin can retrieve both field values and file contents from [1Password][1Password] items
+- When a section is specified, only fields within that section will be matched
 - All configuration is done through labels
 
 Example Docker Compose configurations:
 
 ```yaml
-# Option 1: Using individual fields
+# Option 1: Using individual fields without section
 secrets:
   db_password:
     driver: op-connect-secret-driver
@@ -53,12 +60,29 @@ secrets:
       item: "your-item-uuid-or-name"               # Required: Item UUID or name
       field: "password"                            # Optional: Defaults to "password"
 
-# Option 2: Using 1Password URL reference
+# Option 2: Using individual fields with section
+secrets:
+  db_password:
+    driver: op-connect-secret-driver
+    labels:
+      vault: "your-vault-uuid-or-name"             # Required: Vault UUID or name
+      item: "your-item-uuid-or-name"               # Required: Item UUID or name
+      section: "section-name"                      # Optional: Section name
+      field: "password"                            # Optional: Defaults to "password"
+
+# Option 3: Using 1Password URL reference without section
 secrets:
   db_password:
     driver: op-connect-secret-driver
     labels:
       ref: "op://vault-name/item-name/field-name"  # Required: 1Password URL format
+
+# Option 4: Using 1Password URL reference with section
+secrets:
+  db_password:
+    driver: op-connect-secret-driver
+    labels:
+      ref: "op://vault-name/item-name/section-name/field-name"  # Required: 1Password URL format with section
 ```
 
 
