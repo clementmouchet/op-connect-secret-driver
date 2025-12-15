@@ -202,7 +202,7 @@ jobs:
           echo "platform_tag=$(echo "${{ matrix.platform }}" | tr '/' '-')" >> "$GITHUB_ENV"
 
       - name: 'Download artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           # Use the artifact name created in the build-and-upload-artifacts job
           name: plugin-rootfs-${{ env.platform_tag }}
