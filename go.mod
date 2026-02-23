@@ -1,6 +1,6 @@
 module op-connect-secret-driver
 
-go 1.25
+go 1.26
 
 require (
 	github.com/1Password/connect-sdk-go v1.5.3
