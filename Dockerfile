@@ -1,5 +1,5 @@
 # Use a smaller base image for a smaller final image
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 ARG VERSION="dev"
 
