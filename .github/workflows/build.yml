@@ -172,7 +172,7 @@ jobs:
           docker rm -vf "$id"
 
       - name: 'Upload artifact'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           # Artifact name is key: it's unique per platform
           name: plugin-rootfs-${{ env.platform_tag }}
