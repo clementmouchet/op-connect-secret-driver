@@ -63,7 +63,7 @@ jobs:
           gotestsum --junitfile report.xml --format testname -- -race -coverprofile=coverage.out -covermode=atomic ./...
 
       - name: 'Generate Test Report'
-        uses: dorny/test-reporter@v2
+        uses: dorny/test-reporter@v3
         if: always()
         with:
           name: Go Test Results
