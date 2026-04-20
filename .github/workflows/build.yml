@@ -79,7 +79,7 @@ jobs:
 
       - name: 'Upload Coverage to GitHub Pages'
         if: always()
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./site
           name: github-pages-${{ github.run_id }}
