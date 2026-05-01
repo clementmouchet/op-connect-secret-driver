@@ -132,11 +132,18 @@ jobs:
   build-and-upload-artifacts:
     permissions:
       contents: read
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     needs: [lint, test]
     strategy:
+      fail-fast: false
       matrix:
-        platform: [linux/amd64, linux/arm64]
+        include:
+          - runner: ubuntu-latest
+            platform: linux/amd64
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            platform: linux/arm64
+            arch: arm64
     steps:
       - uses: actions/checkout@v6
 
@@ -144,9 +151,6 @@ jobs:
         run: |
           echo "version=$(git describe --tags --dirty --always --abbrev=12)" >> "$GITHUB_ENV"
           echo "platform_tag=$(echo "${{ matrix.platform }}" | tr '/' '-')" >> "$GITHUB_ENV"
-
-      - name: 'Set up QEMU'
-        uses: docker/setup-qemu-action@v4
 
       - name: 'Set up Docker Buildx'
         uses: docker/setup-buildx-action@v4
@@ -187,8 +191,13 @@ jobs:
     # Only run this job on main branch pushes or tag pushes (i.e., not on PRs)
     if: github.event_name == 'push' && github.ref_name != 'main' || github.ref_name == 'main'
     strategy:
+      fail-fast: false
       matrix:
-        platform: [linux/amd64, linux/arm64]
+        include:
+          - platform: linux/amd64
+            arch: amd64
+          - platform: linux/arm64
+            arch: arm64
     permissions:
       contents: write # Needed for release creation
       packages: write # Needed for Docker Hub push
