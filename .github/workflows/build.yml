@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: 'Go Set up'
         uses: actions/setup-go@v6
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: 'Go Set up'
         uses: actions/setup-go@v6
@@ -145,7 +145,7 @@ jobs:
             platform: linux/arm64
             arch: arm64
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: 'Set environment variables'
         run: |
@@ -204,7 +204,7 @@ jobs:
       id-token: write # Best practice for registry interaction
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: 'Set environment variables'
         run: |
@@ -264,7 +264,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/') && success()
     steps:
       - name: 'Checkout repository'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
