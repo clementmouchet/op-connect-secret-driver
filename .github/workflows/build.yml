@@ -35,7 +35,7 @@ jobs:
         run: golangci-lint run
 
       - name: 'Go Build'
-        run: go build -v ./
+        run: go build -v ./cmd/op-connect-secret-driver
 
   # --- TEST GO CODE ---
   test:

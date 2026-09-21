@@ -122,7 +122,7 @@ docker compose stop op-connect-secret-driver && docker compose rm -f op-connect-
 ### Alternative: Local Build
 
 ```shell
-go build -o plugin/rootfs/op-connect-secret-driver
+go build -o plugin/rootfs/op-connect-secret-driver ./cmd/op-connect-secret-driver
 ```
 
 ## Installation of local build
