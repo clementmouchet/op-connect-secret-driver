@@ -14,8 +14,9 @@ RUN apk add --no-cache git
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy the source code
-COPY main.go .
+# Copy the command and internal driver packages
+COPY cmd ./cmd
+COPY internal ./internal
 
 # Build the binary
 RUN CGO_ENABLED=0 GOOS=linux \
@@ -23,7 +24,7 @@ RUN CGO_ENABLED=0 GOOS=linux \
     -ldflags="-w -X main.version=${VERSION}" \
     -a \
     -installsuffix cgo \
-    -o /op-connect-secret-driver .
+    -o /op-connect-secret-driver ./cmd/op-connect-secret-driver
 
 # Use a minimal image for the final stage
 FROM gcr.io/distroless/static-debian12 AS runner
